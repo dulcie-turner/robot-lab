@@ -21,10 +21,10 @@ create_query = f"CREATE DATABASE {db_name}"
 response = requests.post(create_url, params=dict(q=create_query))
 
 if response.status_code == 200:
-    print(f"Database '{db_name}' created successfully.")
+        print(f"Database '{db_name}' created successfully.")
 else:
-    print(f"Failed to create database '{db_name}'.")
-    exit(1)
+        print(f"Failed to create database '{db_name}'.")
+        exit(1)
 
 #Open the CSV file and write the header row to the CSV file
 csvfile_w=open('logger.csv', 'w', newline='')
@@ -48,7 +48,7 @@ while count<200:
                 if response.status_code == 204:
                         print("Data written successfully.",'number',count,measurement,'=',data)
                 else:
-                        print(f"Failed to write data: {response.text}")
+                        print("Fail to write data")
                 count=count+1
 
 #Close the CSV file 
