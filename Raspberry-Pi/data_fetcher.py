@@ -31,5 +31,6 @@ def get_data_point():
         "logger": topic0.number,
         "temperature": topic0.temperature,
         "pressure": topic0.pressure,
-        "acceleration": topic0.acceleration
+        "acceleration": topic0.acceleration,
+        "timestamp": timestamp
     }

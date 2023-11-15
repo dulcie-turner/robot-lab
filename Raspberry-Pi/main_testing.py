@@ -1,14 +1,9 @@
 #Import necessary libraries and modules
 import csv
 import requests
-from communication import *
-from message import *
+from data_fetcher import *
 from datetime import datetime
 
-
-# Initialize a communication instance
-com=Communication() 
-topic0=topic_msg()
 
 #Define the InfluxDB database name and the server URL, and query /write endpoints
 db_name = 'mydb'
@@ -35,46 +30,39 @@ writer.writeheader()
 #HTTP POST request to write data to InfluxDB
 count=0        
 while count<1000:
-        if com.update_topic==True:
-                com.update_topic= False
-                topic0.decode(com.msg_topic)
-                timestamp = int(datetime.utcnow().timestamp())
+        if data_point_present():
+                point = get_data_point()
 
-                # update the topic0 with time temp pres accel
-                logger_number= topic0.number
-                temperature_data = topic0.temperature
-                pressure_data=topic0.pressure
-                acceleration_data=topic0.acceleration
                 
                 # write to the csv file
-                writer.writerow({'number':count,'temperature':temperature_data,'pressure':pressure_data,'acceleration':acceleration_data})
+                writer.writerow({'number':count,'temperature':point['temperature'],'pressure':point['pressure'],'acceleration':point['acceleration']})
                 
                 # send an HTTP POST request to the influxDB with "data_point"
-                data_point = f"Temperature,logger={logger_number} value={temperature_data} {timestamp}"
+                data_point = f"Temperature,logger={point['logger']} value={point['temperature']} {point['timestamp']}"
                 response = requests.post(write_url, params=dict(db=db_name, precision="s"), data=data_point)
                         
                 # send an HTTP POST request to the influxDB with "data_point" - pressure
-                data_point = f"Pressure,logger={logger_number} value={pressure_data} {timestamp}"
+                data_point = f"Pressure,logger={point['logger']} value={point['pressure']} {point['timestamp']}"
                 response = requests.post(write_url, params=dict(db=db_name, precision="s"), data=data_point)
                 
-                if acceleration_data != []:
-                        print(acceleration_data)
+                if point['acceleration'] != []:
+                        print(point['acceleration'])
                 
                         # send an HTTP POST request to the influxDB with "data_point" - accelerationx
-                        data_point = f"Acceleration_x,logger={logger_number} value={acceleration_data[0]} {timestamp}"
+                        data_point = f"Acceleration_x,logger={point['logger']} value={point['acceleration'][0]} {point['timestamp']}"
                         response = requests.post(write_url, params=dict(db=db_name, precision="s"), data=data_point)
                         
                         # send an HTTP POST request to the influxDB with "data_point" - accelerationy
-                        data_point = f"Acceleration_y,logger={logger_number} value={acceleration_data[1]} {timestamp}"
+                        data_point = f"Acceleration_y,logger={point['logger']} value={point['acceleration'][1]} {point['timestamp']}"
                         response = requests.post(write_url, params=dict(db=db_name, precision="s"), data=data_point)
                         
                         # send an HTTP POST request to the influxDB with "data_point" - accelerationz
-                        data_point = f"Acceleration_z,logger={logger_number} value={acceleration_data[2]} {timestamp}"
+                        data_point = f"Acceleration_z,logger={point['logger']} value={point['acceleration'][2]} {point['timestamp']}"
                         response = requests.post(write_url, params=dict(db=db_name, precision="s"), data=data_point)
 
                                   
                 if response.status_code == 204:
-                        print("Data written successfully.",'number',count,'logger no',logger_number, 'Temperature =',temperature_data,'Pressure =',pressure_data,'Acceleration =',acceleration_data)
+                        print("Data written successfully.",'number',count,'logger no',point['logger'], 'Temperature =',point['temperature'],'Pressure =',point['pressure'],'Acceleration =',point['acceleration'])
                 else:
                         print("Fail to write data")
                 
