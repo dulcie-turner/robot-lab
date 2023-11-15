@@ -5,16 +5,11 @@ from adafruit_dps310.basic import DPS310
 import adafruit_mcp9808
 import adafruit_adxl34x
 
-# Initialize I2C communication for sensors
-try:
-    i2c = busio.I2C(scl=board.GP27,sda=board.GP26)
-except RuntimeError:
-    print("No sensors")
-    i2c = None
-
-# Attempt to initialize the sensors
+# Start with sensors and i2c not set up
 dps310 = mcp = adxl343 = None
+i2c = None
 
+# Functions to attempt to connect to sensors
 def connectPressure():
     try:
         dps310 = DPS310(i2c)
@@ -41,9 +36,12 @@ import wifi
 import time
 from communication import *
 from message import *
+from logger import *
+
+logger = getLoggers()
 
 # Connect to Wi-Fi network
-wifi.radio.connect('UniOfCam-IoT', 'frrXvRk4')
+wifi.radio.connect('UniOfCam-IoT', logger.password)
 print("Wifi connected")
 # Initialize a communication instance
 com=Communication() 
@@ -94,7 +92,7 @@ while True:
         else:
             adxl343 = connectAccel()
         
-        topic.address = [hex(i) for i in wifi.radio.mac_address]
+        topic.number = logger.number
         topic.time = time.time()
         topic1=topic.encode()
         

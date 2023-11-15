@@ -9,12 +9,12 @@ class topic_msg:
         self.pressure=0
         self.time=0
         self.acceleration=[]
-        self.address=[]
+        self.number=0
 
     # Method to encode the 'topic_msg' object as a JSON message
     def encode(self):
         # Create a dictionary with the 'temperature' attribute
-        message={'temperature':self.temperature, 'pressure':self.pressure, 'acceleration': self.acceleration, 'time': self.time, 'address': self.address}
+        message={'temperature':self.temperature, 'pressure':self.pressure, 'acceleration': self.acceleration, 'time': self.time, 'number': self.number}
         # Convert the dictionary to a JSON-formatted string
         json_message=json.dumps(message)
         return json_message
@@ -32,6 +32,6 @@ class topic_msg:
         self.pressure=json_message['pressure']
         self.acceleration=json_message['acceleration']
         self.time=json_message['time']
-        self.address=json_message['address']
+        self.number=json_message['number']
 
 
