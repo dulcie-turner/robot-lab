@@ -12,8 +12,8 @@ class Communication:
         self.mqtt_client.loop_start()
 
         #Subscribe to the MQTT topic
-        self.mqtt_client.message_callback_add('service/topic', self.on_message_topic)
-        self.mqtt_client.subscribe('service/#')
+        self.mqtt_client.message_callback_add('service/topic/#', self.on_message_topic)
+        self.mqtt_client.subscribe('service/topic/#')
         self.msg_topic=''
         self.update_topic= False
 

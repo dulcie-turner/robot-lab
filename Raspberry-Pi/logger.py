@@ -34,7 +34,7 @@ writer.writeheader()
 #Write data to the CSV file
 #HTTP POST request to write data to InfluxDB
 count=0        
-while count<200:
+while count<5000:
         if com.update_topic==True:
                 com.update_topic= False
                 topic0.decode(com.msg_topic)
