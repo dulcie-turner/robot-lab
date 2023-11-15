@@ -93,11 +93,10 @@ while True:
             adxl343 = connectAccel()
         
         topic.number = logger.number
-        topic.time = time.time()
         topic1=topic.encode()
         
         # Publish data 
-        com.publish(topic1)
+        com.publish(f'service/topic/{topic.number}', topic1)
 
     print("")
     

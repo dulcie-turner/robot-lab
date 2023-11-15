@@ -8,7 +8,7 @@ class Logger:
         "28cdc105c47c", "28cdc105c47e",
         "28cdc105c47a", "28cdc105c47d",
         "28cdc105c483", "28cdc105c478",
-        "28cdc105c482"
+        "28cdc105c482", "28cdc10bc0cf"
     ]
 
     passwords = [
@@ -17,7 +17,7 @@ class Logger:
         "MYTHgqus", "KWnrfR6z",
         "VJmtsx5w", "XFQbiwmN​",
         "FFkdwYMj", "yKjkMeND",
-        "saPzGfMR"
+        "saPzGfMR", "n5bt4cPn"
     ]
 
     def __init__(self, number):
@@ -31,7 +31,7 @@ class Logger:
         return detectedAddress == self.macAddress
 
 def getLoggers():
-    for i in range(1, 12):
+    for i in range(1, 13):
         testLogger = Logger(i)
         if testLogger.isCurrent():
             return testLogger

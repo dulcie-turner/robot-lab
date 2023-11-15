@@ -24,5 +24,5 @@ class Communication:
             print("Connection failed")
 
      # Publish a message to a specified topic
-    def publish(self,topic):       
-        self.mqtt_client.publish('service/topic',topic)
+    def publish(self,topicName, topic):       
+        self.mqtt_client.publish(topicName,topic)
