@@ -96,7 +96,6 @@ while True:
         topic.time = time.time()
         topic1=topic.encode()
         
-        print(topic1)
         # Publish data 
         com.publish(topic1)
 

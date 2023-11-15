@@ -28,7 +28,6 @@ class Logger:
     def isCurrent(self):
         # is this logger the current one connected?
         detectedAddress = ''.join([f'{i:02x}' for i in wifi.radio.mac_address])
-        print(detectedAddress)
         return detectedAddress == self.macAddress
 
 def getLoggers():
