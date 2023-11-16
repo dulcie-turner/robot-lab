@@ -36,6 +36,12 @@ while True:
             db.write_point("Acceleration_x", point["acceleration"][0], point["timestamp"], point["logger"])
             db.write_point("Acceleration_y", point["acceleration"][1], point["timestamp"], point["logger"])
             db.write_point("Acceleration_z", point["acceleration"][2], point["timestamp"], point["logger"])
+<<<<<<< Updated upstream
+=======
+                
+        print("----")
+        count=count+1
+>>>>>>> Stashed changes
 
     plcMessage = plc.get_test_sensor()
 
