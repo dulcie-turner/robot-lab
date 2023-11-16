@@ -84,5 +84,3 @@ def test_logger(test_logger, test_sensor):
         print(f"Sensor failed threshold of {thresholds[test_sensor]}%\n")
         return False
         
-test_logger(2, "temperature")
-test_logger(2, "pressure")
