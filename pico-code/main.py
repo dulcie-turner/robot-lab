@@ -5,9 +5,10 @@ from adafruit_dps310.basic import DPS310
 import adafruit_mcp9808
 import adafruit_adxl34x
 
-# Start with sensors and i2c not set up
+# Start with sensors, i2c and communication not set up
 dps310 = mcp = adxl343 = None
 i2c = None
+com = None
 
 # Functions to attempt to connect to sensors
 def connectPressure():
@@ -43,8 +44,6 @@ logger = getLoggers()
 # Connect to Wi-Fi network
 wifi.radio.connect('UniOfCam-IoT', logger.password)
 print("Wifi connected")
-# Initialize a communication instance
-com=Communication() 
 
 while True:
     # Try to connect to i2c
@@ -56,47 +55,58 @@ while True:
             i2c = None
     
     else:
-        # Prepare data for communication
-        topic=topic_msg()
-        
-        # If the pressure sensor is connected, try to take a reading
-        if dps310 != None:
+        # Try to connect to Mosquitto
+        if com == None:
             try:
-                print("dps310 Pressure = %.2f hPa" % dps310.pressure)
-                topic.pressure=dps310.pressure
+                com = Communication()
             except:
-                print("Couldn't get pressure")
-                dps310 = None
+                print("Could not connect to Mosquitto")
+                com = None
         else:
-            dps310 = connectPressure()
+            # Prepare data for communication
+            topic=topic_msg()
+            
+            # If the pressure sensor is connected, try to take a reading
+            if dps310 != None:
+                try:
+                    print("dps310 Pressure = %.2f hPa" % dps310.pressure)
+                    topic.pressure=dps310.pressure
+                except:
+                    print("Couldn't get pressure")
+                    dps310 = None
+            else:
+                dps310 = connectPressure()
 
-        # If the temperature sensor is connected, try to take a reading
-        if mcp != None:
-            try:
-                print("mcp9808 Temperature = %.2f C" % mcp.temperature)
-                topic.temperature=mcp.temperature
-            except:
-                print("Couldn't get temperature")
-                mcp = None
-        else:
-            mcp = connectTemp()
+            # If the temperature sensor is connected, try to take a reading
+            if mcp != None:
+                try:
+                    print("mcp9808 Temperature = %.2f C" % mcp.temperature)
+                    topic.temperature=mcp.temperature
+                except:
+                    print("Couldn't get temperature")
+                    mcp = None
+            else:
+                mcp = connectTemp()
 
-        # If the accelerometer sensor is connected, try to take a reading
-        if adxl343 != None:
+            # If the accelerometer sensor is connected, try to take a reading
+            if adxl343 != None:
+                try:
+                    print("adxl343 accelerometer %f %f %f" % adxl343.acceleration)
+                    topic.acceleration=adxl343.acceleration
+                except:
+                    print("Couldn't get acceleration")
+                    adxl343 = None
+            else:
+                adxl343 = connectAccel()
+            
+            topic.number = logger.number
+            topic1=topic.encode()
+            
+            # Try to publish data
             try:
-                print("adxl343 accelerometer %f %f %f" % adxl343.acceleration)
-                topic.acceleration=adxl343.acceleration
+                com.publish(f'service/topic/{topic.number}', topic1)
             except:
-                print("Couldn't get acceleration")
-                adxl343 = None
-        else:
-            adxl343 = connectAccel()
-        
-        topic.number = logger.number
-        topic1=topic.encode()
-        
-        # Publish data 
-        com.publish(f'service/topic/{topic.number}', topic1)
+                com = None
 
     print("")
     
