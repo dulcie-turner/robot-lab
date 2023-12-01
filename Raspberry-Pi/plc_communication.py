@@ -6,7 +6,8 @@ import automationhat
 
 
 
-# sensor 0:temperature 1: pressure 2: acceleration	
+# sensor 0:temperature 1: pressure 2: acceleration
+# 3 digit input 	
 def plc_input():
 	if automationhat.is_automation_hat():
 		automationhat.light.power.write(1)
@@ -23,6 +24,8 @@ def plc_input():
 
 # sensor: temperature, pressure, acceleration
 # result: pass:1 fail:0
+# currently the output is 2-digit for each sensor (probably need to change it)
+# output: relay 0: no result; relay 1: has result; output 0: fail; ouput 1: pass
 def plc_output(sensor,result):
 	if automationhat.is_automation_hat():
 		automationhat.light.power.write(1)
@@ -49,7 +52,7 @@ while True:
 	automationhat.output.write(0)
 	automationhat.relay.write(0)
 	if plc_input()!= None:
-		print(plc_output(plc_input(),1))
+		print(plc_output(plc_input(),0))
 		time.sleep(1)
 		automationhat.output.write(1)
 		automationhat.relay.write(1)

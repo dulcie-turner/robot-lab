@@ -12,7 +12,7 @@ from statistics import mean
 
 reference_logger = 12
 reference_interval = 5 # n readings at 1 second per reading
-timeout_duration = 15 # seconds before timeout
+timeout_duration = 20 # seconds before timeout
 program_delay = 0.1 # delay while checking for readings
 
 # percentage thresholds
@@ -30,7 +30,17 @@ class Reading():
         self.timestamp = timestamp
         self.test = test
         self.ref = ref
-
+        
+class TestResult():
+    def __init__(self, logger, sensor, error):
+        self.logger = logger
+        self.sensor = sensor
+        self.error = error
+        if self.error:
+            self.passed = False
+        else:
+            self.passed = True
+        
 def test_logger(test_sensor):
     """
         WHAT THIS DOES:
@@ -85,14 +95,17 @@ def test_logger(test_sensor):
                         # if the data isn't coming from the test logger
                         # this means there are multiple loggers that could potentially be the test logger
                         # error!
-                        raise Exception("Multiple untested sensors are sending data at once. Can't identify sensor to test")
+                        return TestResult(None, test_sensor, "couldn't_identify_logger")
                         
         timeout += 1
         sleep(program_delay)
         
     if (timeout * program_delay) >= timeout_duration:
         print(f"Timed out - reference logger had {ref_samples} samples, and found {test_samples} test samples")
-        return False
+        if test_samples <= reference_interval:
+            return TestResult(None, test_sensor, "no_test_logger")
+        else:
+            return TestResult(None, test_sensor, "no_ref_logger")
        
     # find the average difference
     average_test_reading = mean([i.test for i in samples if i.test != None])
@@ -101,15 +114,15 @@ def test_logger(test_sensor):
     
     print(f"Logger tested: {test_logger} , Test average: {average_test_reading:.2f} , Ref average: {average_ref_reading:.2f} , Percentage difference: {(percent_difference):.2f}%")
     
-    if percent_difference <= thresholds[test_sensor]:
+    if abs(percent_difference) <= thresholds[test_sensor]:
         print(f"Sensor met threshold of {thresholds[test_sensor]}%\n")
 
         # mark the sensor as successfully tested
         signals_to_ignore[test_logger][test_sensor] = True
-        return True
+        return TestResult(test_logger, test_sensor, None)
     else:
         print(f"Sensor failed threshold of {thresholds[test_sensor]}%\n")
-        return False
+        return TestResult(test_logger, test_sensor, "out_of_threshold")
 
 if __name__ == "__main__":
     # this only executes if you run this code on its own
@@ -117,3 +130,4 @@ if __name__ == "__main__":
     
     test_logger("temperature")
     test_logger("pressure")
+    test_logger("temperature")
