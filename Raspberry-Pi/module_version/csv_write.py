@@ -8,7 +8,8 @@ class CSVFile:
         self.writer.writeheader()  
 
     def write(self, point):
-        self.writer.writerow({'time': point["timestamp"],'temperature':point['temperature'],'pressure':point['pressure'],'acceleration_x':point['acceleration'][0], 'acceleration_y':point['acceleration'][1], 'acceleration_z':point['acceleration'][2]})
+        if len(point["acceleration"]) == 3:
+            self.writer.writerow({'time': point["timestamp"],'temperature':point['temperature'],'pressure':point['pressure'],'acceleration_x':point['acceleration'][0], 'acceleration_y':point['acceleration'][1], 'acceleration_z':point['acceleration'][2]})
 
     def close(self):
         self.csv_write.close()

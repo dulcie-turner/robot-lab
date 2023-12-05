@@ -18,12 +18,26 @@ class Database:
         else:
                 print(f"Failed to create database '{self.db_name}'.")
                 exit(1)
+    
+    def write_reading(self, reading):
+        # write a reading, composed of n points
+        
+        self.write_point("Temperature", reading["temperature"], reading["logger"], reading["timestamp"])
+        self.write_point("Pressure", reading["pressure"], reading["logger"], reading["timestamp"])    
+        if len(reading['acceleration']) == 3:
+            self.write_point("Acceleration_x", reading["acceleration"][0], reading["logger"], reading["timestamp"])
+            self.write_point("Acceleration_y", reading["acceleration"][1], reading["logger"], reading["timestamp"])
+            self.write_point("Acceleration_z", reading["acceleration"][2], reading["logger"], reading["timestamp"])
+        print("----")
 
     def write_point(self, measurement, value, logger, timestamp=None, tags=None):
         # send an HTTP POST request to the influxDB with "data_point"
         if timestamp == None:
             timestamp = int(datetime.utcnow().timestamp())
         
+         # convert timestamp to seconds if needed
+        if len(str(timestamp)) > len(str(int(datetime.utcnow().timestamp()))):
+            timestamp = int(timestamp / 1000)
         if tags:
             tag_string = ",".join([f"{i}={tags[i]}" for i in tags])
             data_point = f"{measurement},logger={logger},{tag_string} value={value} {timestamp}"
@@ -39,3 +53,4 @@ class Database:
             print(f"Code {response.status_code} with text {response.text}")
             
             return False
+
