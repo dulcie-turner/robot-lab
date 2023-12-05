@@ -2,6 +2,7 @@
 import adafruit_minimqtt.adafruit_minimqtt as mqtt 
 import socketpool
 import wifi
+from json import dumps
 
 
 # Define a Communication class
@@ -24,5 +25,5 @@ class Communication:
             print("Connection failed")
 
      # Publish a message to a specified topic
-    def publish(self,topicName, topic):       
-        self.mqtt_client.publish(topicName,topic)
+    def publish(self,topicName, topic):
+        self.mqtt_client.publish(topicName,dumps(topic, separators=(',', ':')))
