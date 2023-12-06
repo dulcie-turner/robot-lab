@@ -41,11 +41,16 @@ from logger import *
 
 logger = getLoggers()
 
-# Connect to Wi-Fi network
-wifi.radio.connect('UniOfCam-IoT', logger.password)
-print("Wifi connected")
-
 topics = []
+wifiConnected = False
+while not wifiConnected:
+    try:
+        # Try to connect to Wi-Fi network
+        wifi.radio.connect('UniOfCam-IoT', logger.password)
+        wifiConnected = True
+        print("Wifi connected")
+    except Exception as e:
+        print(f"Unable to connect to WiFi: {e}")
 
 readingInterval = 0.015 # this is an approx value
 packetSize = 0.3 / readingInterval  # also approximate (should be equal to 5 seconds ish)
@@ -99,7 +104,8 @@ while True:
             if adxl343 != None:
                 try:
                     # print("adxl343 accelerometer %f %f %f" % adxl343.acceleration)
-                    topic.acc=adxl343.acceleration
+                    relative_acc = adxl343.acceleration # (relative to the accelerometer)
+                    topic.acc = [relative_acc[2], relative_acc[1], relative_acc[0]] # reorder axes
                 except:
                     print("Couldn't get acceleration")
                     adxl343 = None

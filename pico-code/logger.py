@@ -15,7 +15,7 @@ class Logger:
         "jkQYAJk7", "frrXvRk4",
         "YtUXaagd", "MSYwxASv",
         "MYTHgqus", "KWnrfR6z",
-        "VJmtsx5w", "XFQbiwmN​",
+        "VJmtsx5w", "XFQbiwmN",
         "FFkdwYMj", "yKjkMeND",
         "saPzGfMR", "n5bt4cPn"
     ]
