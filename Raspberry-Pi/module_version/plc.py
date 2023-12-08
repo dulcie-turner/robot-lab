@@ -1,23 +1,25 @@
 import automationhat
 
 class PLC:
-    # NEED TO CHANGE CODES
     
     """
     INPUT BIT LABELS:
-        (unknown)
+        [Test?, Is Shaking?, Result Received?]
         
     OUTPUT BIT LABELS:
         [Temp Failed?, Pressure Failed?, Gyro Failed?, Result Ready?, Busy?, Gyro Ready for Shaking?]
     """
     input_codes = {
-        "test" : [0, 0, 1],
+        "test" : [1, 0, 0],
+        "shaking": [0, 1, 0],
+        "resultReceived": [0, 0, 1]
     }
     
     output_codes = {
         "result": [0, 0, 0, 1, 1, 0],
         "ready": [0, 0, 0, 0, 0, 0],
-        "busy": [0, 0, 0, 0, 1, 0]
+        "busy": [0, 0, 0, 0, 1, 0],
+        "shakeRequest": [0, 0, 0, 0, 1, 1]
     }
     
     nBitsToPLC = 6
@@ -43,9 +45,7 @@ class PLC:
             return None
 
     def set_signal(self, signal, testResults=None):
-        # INPUTS: "ready", "busy", "pass" or "fail" (TO CHANGE)
-        # METHOD: cross ref these statements with our code assignments
-        # OUTPUT: digital signals to the PLC
+        # print(f"Sending PLC signal {signal} with test results {testResults}")
         
         matching_output = self.output_codes[signal]
         
@@ -54,6 +54,8 @@ class PLC:
         if testResults != None:
             for index in range(len(testResults)):
                 matching_output[index] = not testResults[index]
+                
+        matching_output = [1 - x for x in matching_output] # flip each bit
                 
         # display output (first half are output pins, second are relay pins, but functionally the same) 
         for i in range(self.nBitsToPLC):

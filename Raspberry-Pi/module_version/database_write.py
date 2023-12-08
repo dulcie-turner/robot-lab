@@ -28,7 +28,7 @@ class Database:
             self.write_point("Acceleration_x", reading["acceleration"][0], reading["logger"], reading["timestamp"])
             self.write_point("Acceleration_y", reading["acceleration"][1], reading["logger"], reading["timestamp"])
             self.write_point("Acceleration_z", reading["acceleration"][2], reading["logger"], reading["timestamp"])
-        print("----")
+        # print("----")
 
     def write_point(self, measurement, value, logger, timestamp=None, tags=None):
         # send an HTTP POST request to the influxDB with "data_point"
@@ -46,7 +46,7 @@ class Database:
         response = requests.post(self.write_url, params=dict(db=self.db_name, precision="s"), data=data_point)
 
         if response.status_code == 204:
-            print(f"Data written successfully: {measurement} reading for logger {logger} with a value of {value} and time of {timestamp}")
+            # print(f"Data written successfully: {measurement} reading for logger {logger} with a value of {value} and time of {timestamp}")
             return True
         else:
             print(f"Failed to write data: {measurement} reading for logger {logger} with a value of {value}")

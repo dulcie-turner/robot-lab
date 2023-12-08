@@ -1,11 +1,3 @@
-"""
-WHAT THIS DOES:
-    Get a data feed for the relevant two sensors
-    For a specified comparison interval, find the average difference
-    Compare it to a threshold to decide whether to reject (returning True or False)
-
-    (This only works for pressure and temperature currently)
-"""
 
 from data_fetcher import *
 from time import sleep
@@ -13,7 +5,7 @@ from statistics import mean
 
 # percentage thresholds
 thresholds = {
-    "temperature": 2,
+    "temperature": 15,
     "pressure": 1
 }
 # sensors to test and their order
@@ -80,7 +72,7 @@ def do_sensor_test(test_sensor):
 class SampleSet():
     # define testing constants
     reference_logger = 12
-    required_samples = 5
+    required_samples = 80
     program_delay = 0.005
     timeout_duration = 10 / program_delay
     
@@ -106,11 +98,12 @@ class SampleSet():
             if packet_present():
                 points = get_data_points()
                 
-                # if this isn't a logger to ignore
-                if not points[0]["logger"] in loggers_to_ignore:
-                    # save each point in the packet
-                    for point in points:
-                        self.saveSample(point)
+                if points:
+                    # if this isn't a logger to ignore
+                    if not points[0]["logger"] in loggers_to_ignore:
+                        # save each point in the packet
+                        for point in points:
+                            self.saveSample(point)
                         
             self.timeout += 1
             sleep(self.program_delay)

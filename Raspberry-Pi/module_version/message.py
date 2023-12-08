@@ -26,4 +26,3 @@ class topic_msg:
         self.temperatures=[i['t'] for i in sensor_data]
         self.pressures=[i['p'] for i in sensor_data]
         self.accelerations=[i['a'] for i in sensor_data]
-

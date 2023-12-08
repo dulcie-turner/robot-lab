@@ -2,14 +2,17 @@
 from csv_write import *
 from data_fetcher import *
 from database_write import *
-from data_comparison import *
+from sensor_test import *
 from plc import *
 
 from time import sleep
 
 db = Database()
-csv = CSVFile()
+csv = CSVFile("logger.csv", ['time','temperature','pressure','acceleration_x', 'acceleration_y', 'acceleration_z'])
 plc = PLC()
+
+showingTestResult = False
+runningTest = False
 
 """ WHAT DOES THIS DO?
 
@@ -31,9 +34,11 @@ try:
     while True:
         if packet_present():
             # get a packet of data points
-            try:
-                points = get_data_points()
-                
+
+            points = get_data_points()
+            
+            
+            if points:    
                 written_timestamps = []
                 for point in points:
                     # write to the database
@@ -43,28 +48,30 @@ try:
                         written_timestamps.append(int(point["timestamp"] / 1000))
                 
                     # csv data collection
-                    if point["logger"] == 12:    
-                        csv.write(point)
+                    # if point["logger"] == 12:    
+                    #    csv.writePoint(point)
                         
-            except json.decoder.JSONDecodeError as e:
-                # sometimes packet sending fails, ignore this
-                print(e)
-
         # if a sensor needs testing
         plcMessage = plc.get_signal()
-        if plcMessage == "test":
-            plc.set_signal("busy")
+        if plcMessage == "test" and (not runningTest):
+            runningTest = True
+            plc.set_signal("busy") 
             
             # test each sensor and upload results to database
-            results = do_logger_test()
+            results = do_logger_test(plc)
             for r in results:
                 db.write_point("result", r.passed, r.logger, tags={"error": r.error, "sensor": r.sensor})
 
-            # briefly send test results to PLC
+            # send test results to PLC, until they signal that they are finished
             plc.set_signal("result", [r.passed for r in results])
-            sleep(2)
-            plc.set_signal("ready")
+            showingTestResult = True
           
+        if plcMessage == "resultReceived" and runningTest:
+            print("Results received")
+            plc.set_signal("ready")
+            showingTestResult = False
+            runningTest = False
+            
         sleep(0.005)
         
 except KeyboardInterrupt:
