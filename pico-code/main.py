@@ -41,9 +41,21 @@ from logger import *
 
 logger = getLoggers()
 
-# Connect to Wi-Fi network
-wifi.radio.connect('UniOfCam-IoT', logger.password)
-print("Wifi connected")
+topics = []
+wifiConnected = False
+while not wifiConnected:
+    try:
+        # Try to connect to Wi-Fi network
+        wifi.radio.connect('UniOfCam-IoT', logger.password)
+        wifiConnected = True
+        print("Wifi connected")
+    except Exception as e:
+        print(f"Unable to connect to WiFi: {e}")
+
+readingInterval = 0.015 # this is an approx value
+packetSize = 0.3 / readingInterval  # also approximate (should be equal to 5 seconds ish)
+
+lastTime = time.monotonic()
 
 while True:
     # Try to connect to i2c
@@ -69,8 +81,8 @@ while True:
             # If the pressure sensor is connected, try to take a reading
             if dps310 != None:
                 try:
-                    print("dps310 Pressure = %.2f hPa" % dps310.pressure)
-                    topic.pressure=dps310.pressure
+                    # print("dps310 Pressure = %.2f hPa" % dps310.pressure)
+                    topic.press=dps310.pressure
                 except:
                     print("Couldn't get pressure")
                     dps310 = None
@@ -80,8 +92,8 @@ while True:
             # If the temperature sensor is connected, try to take a reading
             if mcp != None:
                 try:
-                    print("mcp9808 Temperature = %.2f C" % mcp.temperature)
-                    topic.temperature=mcp.temperature
+                    # print("mcp9808 Temperature = %.2f C" % mcp.temperature)
+                    topic.temp=mcp.temperature
                 except:
                     print("Couldn't get temperature")
                     mcp = None
@@ -91,24 +103,30 @@ while True:
             # If the accelerometer sensor is connected, try to take a reading
             if adxl343 != None:
                 try:
-                    print("adxl343 accelerometer %f %f %f" % adxl343.acceleration)
-                    topic.acceleration=adxl343.acceleration
+                    # print("adxl343 accelerometer %f %f %f" % adxl343.acceleration)
+                    relative_acc = adxl343.acceleration # (relative to the accelerometer)
+                    topic.acc = [relative_acc[2], relative_acc[1], relative_acc[0]] # reorder axes
                 except:
                     print("Couldn't get acceleration")
                     adxl343 = None
             else:
                 adxl343 = connectAccel()
             
-            topic.number = logger.number
-            topic1=topic.encode()
+            encoded_topic=topic.encode()   
+            topics.append(encoded_topic)
             
-            # Try to publish data
-            try:
-                com.publish(f'service/topic/{topic.number}', topic1)
-            except:
-                com = None
+            if len(topics) > packetSize:
+                # Try to publish data
+                try:
+                    topics.append(logger.number)
+                    com.publish(f'service/topic/{logger.number}', topics)
+                    topics = []
+                    
+                    # print(f"sent w {time.monotonic() - lastTime}s del")
+                    lastTime = time.monotonic()
+                except Exception as e:
+                    topics = []
+                    com = None
 
-    print("")
-    
-    # Sleep for 1 second before the next iteration"""
-    time.sleep(1)
+    # Sleep before the next iteration"""
+    time.sleep(readingInterval)

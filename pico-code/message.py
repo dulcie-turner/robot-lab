@@ -5,18 +5,15 @@ import json
 class topic_msg:
     def __init__(self):
         # Initialize the 'temperature' attribute to 0
-        self.temperature=0
-        self.pressure=0
-        self.acceleration=[]
-        self.number=0
+        self.temp=0
+        self.press=0
+        self.acc=[]
 
     # Method to encode the 'topic_msg' object as a JSON message
     def encode(self):
         # Create a dictionary with the 'temperature' attribute
-        message={'temperature':self.temperature, 'pressure':self.pressure, 'acceleration': self.acceleration, 'number': self.number}
-        # Convert the dictionary to a JSON-formatted string
-        json_message=json.dumps(message)
-        return json_message
+        message={'t':round(self.temp,2), 'p':round(self.press,2), 'a': [round(a, 3) for a in self.acc]}
+        return message
 
     # Method to decode a JSON message and update the 'topic_msg' object
     def decode(self,inputs=None):  
@@ -27,9 +24,8 @@ class topic_msg:
         json_message=json.loads(inputs)
 
         # Update the 'temperature' attribute with the value from the JSON message
-        self.temperature=json_message['temperature']
-        self.pressure=json_message['pressure']
-        self.acceleration=json_message['acceleration']
-        self.number=json_message['number']
+        self.temp=json_message['t']
+        self.press=json_message['p']
+        self.acc=json_message['a']
 
 
