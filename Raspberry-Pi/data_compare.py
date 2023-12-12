@@ -1,3 +1,5 @@
+# functions to compare readings from the data logger
+
 from data_fetcher import *
 from time import sleep
 from statistics import mean
@@ -12,7 +14,7 @@ thresholds = {
 # store and test the samples
 class SampleSet():
     # define testing constants
-    reference_logger = 12 # with sensor 4s in it!
+    reference_logger = 12 
     required_samples = 80
     program_delay = 0.005
     timeout_duration = 20 / program_delay
@@ -34,6 +36,8 @@ class SampleSet():
         # get all the samples needed for a test
         print(f"Getting {self.sensor} samples, to compare to logger {self.reference_logger}")
         
+        # if this is acceleration, store the values and save in a csv
+        # only read values while the PLC says it is shaking
         if self.sensor == "acceleration":
             acc_csv = CSVFile("acc.csv", ["time", "acc_x", "acc_y", "acc_z"])
             while plc.get_signal() == "shaking":
@@ -48,9 +52,9 @@ class SampleSet():
                                 self.saveSample(point, acc_csv)
                                 
                 sleep(self.program_delay)
-                
             acc_csv.close()
         else:
+            # if this is temperature or pressure, store the data points
             # repeat until you've got enough of both data points, or there has been a timeout
             while (self.nTestSamples <= self.required_samples or self.nRefSamples <= self.required_samples) and self.timeout < self.timeout_duration:
                 if packet_present():
@@ -79,7 +83,7 @@ class SampleSet():
             
             if reading["logger"] == self.reference_logger:
                 # if it is from the ref logger, save it
-                if self.sensor != "acceleration": # gyro does not use a live reference
+                if self.sensor != "acceleration": # gyro does not use the reference logger
                     self.samples.append(Sample(reading["timestamp"],ref=reading[self.sensor]))
                     self.nRefSamples += 1
             else:
@@ -92,6 +96,7 @@ class SampleSet():
                     self.samples.append(Sample(reading["timestamp"], test=reading[self.sensor]))
                     self.nTestSamples += 1
                     
+                    # store it in a csv for further analysis if needed (for testing only)
                     if self.sensor == "acceleration":
                         csv.writeAcc(reading["timestamp"], reading[self.sensor])
                 else:
@@ -111,6 +116,8 @@ class SampleSet():
             return False
         
     def testGyro(self):
+        # algorithm to test whether the gyro data matches a particular pattern
+
         acceleration = [i.test for i in self.samples if i.test != None]
         
         acceleration_x = [i[0] for i in acceleration]
@@ -185,7 +192,7 @@ class SampleSet():
         }
                     
     def getAverageDifference(self):
-        # find the average difference (used for temperature and pressure)
+        # find the absolute average difference (used for temperature and pressure)
         average_test_reading = mean([i.test for i in self.samples if i.test != None])
         average_ref_reading = mean([i.ref for i in self.samples if i.ref != None])
         percent_difference = 100 * (average_test_reading - average_ref_reading) / average_ref_reading

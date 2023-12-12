@@ -24,9 +24,6 @@ Repeatedly loops
         It tests all three sensors
         It sends the result to the PLC (plus a result ready signal)
         It uploads the result to the database
-    Else
-        It sends a ready signal
-
 """
 plc.set_signal("ready")
 
@@ -34,9 +31,7 @@ try:
     while True:
         if packet_present():
             # get a packet of data points
-
             points = get_data_points()
-            
             
             if points:    
                 written_timestamps = []

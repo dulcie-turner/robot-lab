@@ -18,6 +18,7 @@ from datetime import datetime
 com=Communication() 
 topic0=topic_msg()
 
+# Pico sampling interval, used for backdating timestamps
 sampling_interval = 0.015
 
 def packet_present():
@@ -33,19 +34,19 @@ def get_data_points():
         topic0.decode(com.msg_topic)
         time_of_arrival = int(datetime.utcnow().timestamp() * 1000) # get timestamp of packet arrival in ms
 
-        unsorted_dict = [{
+        unsorted_dicts = [{
             "logger": topic0.number,
             "temperature": topic0.temperatures[i],
             "pressure": topic0.pressures[i],
             "acceleration": topic0.accelerations[i],
             # each sample must have a unique timestamp, but the timestamps are not sent (due to the Pico's unreliable onboard clock)
-            # so the sample times are back-calculated from the time of arrival (this is very approximate!)
+            # so the sample times are back-calculated from the time of arrival (this is VERY approximate and should be improved!)
             "timestamp": time_of_arrival - (i * sampling_interval)
         } for i in range(len(topic0.temperatures))]
         
         # sort by timestamp
-        sorted_dict = sorted(unsorted_dict, key=lambda d: d["timestamp"])
-        return sorted_dict
+        sorted_dicts = sorted(unsorted_dicts, key=lambda d: d["timestamp"])
+        return sorted_dicts
     
     except (json.decoder.JSONDecodeError, UnicodeDecodeError) as e:
          # sometimes packets are invalid and cause errors

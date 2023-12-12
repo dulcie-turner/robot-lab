@@ -1,9 +1,7 @@
 """
 WHAT THIS DOES:
-    Get a data feed for the relevant two sensors
+    Get a data feed for the relevant sensors
     Using the relevant algorithm, validate the sensors
-
-    (This only works for pressure and temperature currently)
 """
 
 from data_compare import *
@@ -27,14 +25,13 @@ def do_logger_test(plc):
             while plc.get_signal() != "shaking":
                 sleep(0.01)
                 
+            # run test
             print("PLC shaking has started")
             plc.set_signal("busy")
             results.append(do_sensor_test(sensor, plc))
-            # once plc says shaking started (this should be delayed until the logger is picked up), do our test (and turn off shaking request)
-            # collect data until plc says stop
-            # do comparison
             
         else:
+            # run pressure / temperature test
             results.append(do_sensor_test(sensor))
         print(results[-1])
         
@@ -42,19 +39,17 @@ def do_logger_test(plc):
         # if all sensors working, ignore logger
         loggers_to_ignore.append(results[0].logger) # (ASSUMES ALL TESTED SENSORS ARE FROM THE SAME LOGGER)
     else:
-        # if some sensors are working but not all, can't ignore it since it will be retested
-        # if no sensors working, can't ignore it (since the logger is unidentified) but will have to assume it doesn't send any data later
+        # if some sensors are working but not all, can't ignore it since it will be retested 
+        # (note: if the test constantly returns a partial failure, this will test the logger infinitely)
+        
+        # if no sensors working, can't ignore it since the logger is unidentified
+        # (note: assumption is that the logger will not send any data later)
         pass  
+
     return results
 
 def do_sensor_test(test_sensor, plc=None):
     """
-        WHAT THIS DOES:
-            Gets all the data for a specific sensor type (for the loggers that aren't being ignored)
-            If there is data from a single logger, this is the logger to be tested
-            If there is no data, the sensor / logger isn't working
-            If there is data for multiple loggers, error!
-            
         (RETESTING LOGIC):
             If all sensors work, the logger continues
             If some sensors work, the faulty ones are replaced until all sensors work
@@ -65,29 +60,31 @@ def do_sensor_test(test_sensor, plc=None):
     sample_set = SampleSet(test_sensor)
     sample_set.fetchSamples(loggers_to_ignore, plc)
     
-    # if it found multiple potential test loggers
+    # if it found multiple potential test loggers, fail test
     if sample_set.conflicting_loggers:
         return TestResult(None, sample_set.sensor, "couldn't_identify_logger")
     
     # if either test or reference loggers had a timeout, or no gyro readings
     if sample_set.timed_out or sample_set.nTestSamples == 0:
         print(f"Timed out - reference logger had {sample_set.nRefSamples} samples, and found {sample_set.nTestSamples} test samples")
+        
         # identify which logger timed out and return result
         if sample_set.nTestSamples <= sample_set.required_samples:
             return TestResult(None, sample_set.sensor, "no_test_logger")
         else:
             return TestResult(None, sample_set.sensor, "no_ref_logger")
     
+    # test temperature / pressure and return result
     if test_sensor == "temperature" or test_sensor == "pressure":
         if sample_set.testTempPressure():
             return TestResult(sample_set.test_logger, sample_set.sensor, None)
         else:
             return TestResult(sample_set.test_logger, sample_set.sensor, "out_of_threshold")
         
+    # test gyro and return result
     if test_sensor == "acceleration":
         gyroResult = sample_set.testGyro()
-        print(gyroResult)
-        
+
         if all(gyroResult["detected"]):
             return TestResult(sample_set.test_logger, sample_set.sensor, None)
         else:
@@ -106,6 +103,7 @@ class TestResult():
             self.passed = True
             
     def __str__(self):
+        # print the test result
         return f"Tested {self.sensor} for logger {self.logger} with error {self.error}"
     
 if __name__ == "__main__":

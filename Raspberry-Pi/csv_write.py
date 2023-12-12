@@ -8,11 +8,12 @@ class CSVFile:
         self.writer.writeheader()  
 
     def writePoint(self, point):
-        # write a single data point
+        # write a single data point from the logger
         if len(point["acceleration"]) == 3:
             self.writer.writerow({'time': point["timestamp"],'temperature':point['temperature'],'pressure':point['pressure'],'acceleration_x':point['acceleration'][0], 'acceleration_y':point['acceleration'][1], 'acceleration_z':point['acceleration'][2]})
 
     def writeAcc(self, time, acc):
+        # write a single acceleration value
         self.writer.writerow({'time': time, 'acc_x': acc[0], 'acc_y': acc[1], 'acc_z': acc[2]})
         
     def close(self):

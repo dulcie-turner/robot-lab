@@ -4,7 +4,6 @@ import json
 # Define a class called 'topic_msg'
 class topic_msg:
     def __init__(self):
-        # Initialize the 'temperature' attribute to 0
         self.temperatures=[]
         self.accelerations = []
         self.pressures = []

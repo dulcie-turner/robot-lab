@@ -32,12 +32,10 @@ class PLC:
             automationhat.light.power.write(1)
 
     def get_signal(self):
-        # INPUTS: digital signals from the PLC
-        # METHOD: cross ref these signals with our code assignments
-        # OUTPUT: a sensor ("temperature", "pressure" or "acceleration") or None (TO CHANGE)
-        
+        # read inputs from the PLC
         self.inputs = [automationhat.input[i].read() for i in range(self.nBitsFromPLC)]
         
+        # match these inputs with the corresponding signal name, then return
         try:
             matching_input = list(self.input_codes.keys())[list(self.input_codes.values()).index(self.inputs)]
             return matching_input
@@ -47,6 +45,7 @@ class PLC:
     def set_signal(self, signal, testResults=None):
         # print(f"Sending PLC signal {signal} with test results {testResults}")
         
+        # match the signal name with the corresponding binary sequence
         matching_output = self.output_codes[signal]
         
         # add test results to output
@@ -65,9 +64,11 @@ class PLC:
                 automationhat.relay[i % 3].write(matching_output[i])
     
     def get_raw(self):
+        # read raw bits
         return [automationhat.input[i].read() for i in range(self.nBitsFromPLC)]
     
     def set_raw(self, signal):
+         # send raw bits
          for i in range(self.nBitsToPLC):
             if i < 3:
                 automationhat.output[i].write(signal[i])
