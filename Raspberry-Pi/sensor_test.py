@@ -88,9 +88,6 @@ def do_sensor_test(test_sensor, plc=None):
         gyroResult = sample_set.testGyro()
         print(gyroResult)
         
-        # force test to pass
-        return TestResult(sample_set.test_logger, sample_set.sensor, None)
-        
         if all(gyroResult["detected"]):
             return TestResult(sample_set.test_logger, sample_set.sensor, None)
         else:

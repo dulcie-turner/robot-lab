@@ -72,8 +72,6 @@ class SampleSet():
                 
     def saveSample(self, reading, csv=None):
         # save each sample in the appropriate place in the samples list
-        # if self.sensor == "acceleration":
-        #    print(reading[self.sensor])
             
         # if not a blank or invalid reading
         if (reading[self.sensor] != 0) and not (self.sensor == "acceleration" and len(reading[self.sensor]) != 3):

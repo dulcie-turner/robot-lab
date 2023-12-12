@@ -1,2 +1,0 @@
-b'{"time": 1577837170, "acceleration": [9.53206, -0.23536, -0.196133], "pressure": 1013.06, "temperature": 26.0, "number": 2}'
-b'{"time": 1577837227, "acceleration": [9.57129, -0.196133, -0.196133], "pressure": 1013.03, "temperature": 25.75, "number": 2}'
